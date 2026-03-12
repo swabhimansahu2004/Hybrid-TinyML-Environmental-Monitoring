@@ -1,6 +1,6 @@
 # Integrated Hybrid Optimization TinyML Framework for Environmental Monitoring
 
-### Group: 51-09 | Siksha 'O' Anusandhan (Deemed to be University)
+### Group: 44-09 | Siksha 'O' Anusandhan (Deemed to be University)
 
 ## 📌 Project Overview
 This research focuses on bridging the "memory gap" between complex deep learning models and resource-constrained microcontrollers like the **ESP32**. We are developing a TinyML system capable of real-time, on-device detection of environmental hazards (fire and smoke) using a fusion of temperature, humidity, and chemical gas signatures.
