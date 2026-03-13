@@ -43,3 +43,46 @@ The model is trained on a multi-dimensional dataset including:
 - [ ] Phase 2: Training the "Teacher" Model (Completed)
 - [ ] Phase 3: Applying Hybrid Pruning and Distillation
 - [ ] Phase 4: ESP32 Hardware Deployment and Real-time Testing
+
+## 📈 Phase 1: Data Engineering & Correlation Analysis
+Before training, we audited the dataset to ensure "Research Integrity." The goal was to ensure the model learns environmental physics rather than metadata patterns.
+
+### Key Actions:
+* **Feature Selection:** Removed `UTC`, `CNT`, and `Unnamed: 0`. These metadata columns showed high correlation with the target but would lead to "Data Leakage," making the model fail in real-world deployment.
+* **Normalization:** Implemented `StandardScaler` to handle range differences between TVOC (0–60,000 ppb) and Temperature (~20°C).
+* **Statistical Validation:** Verified a clean dataset with zero missing values and a healthy 71/29 class distribution.
+
+### Feature Correlation Heatmap:
+The heatmap below justifies our feature selection, showing the strong physical relationship between Humidity, Gas levels (Raw H2/Ethanol), and the Fire Alarm trigger.
+
+![Correlation Heatmap]() 
+*Note: High negative correlation in Raw Ethanol and positive correlation in Humidity are key drivers for the model.*
+
+---
+
+## 🧠 Phase 2: Teacher Model Training (The "Expert")
+We developed a high-capacity "Teacher" model to serve as the gold standard for intelligence. This model acts as the "Source of Truth" for the subsequent Knowledge Distillation phase.
+
+### Architecture:
+* **Type:** Deep Neural Network (DNN)
+* **Complexity:** ~30,000 parameters (Dense Layers: 64 -> 128 -> 64 -> 32 -> 1)
+* **Optimization:** Adam Optimizer with Binary Cross-Entropy loss.
+* **Regularization:** 20% Dropout to ensure generalization.
+
+### Results:
+* **Final Test Accuracy:** **99.84%**
+* **Inference Logic:** The model successfully identifies "Collective Anomalies" by evaluating the fusion of 12 distinct sensor inputs.
+
+### Performance Learning Curves:
+The training logs show perfect convergence. The narrow gap between the training and validation lines confirms that the model is not overfitted and is ready for distillation.
+
+![Teacher Training Curves]()
+
+---
+
+### 📦 Artifacts Generated
+| File | Purpose |
+| :--- | :--- |
+| `scaler.pkl` | Vital for ESP32; contains mean/std constants for real-time data scaling. |
+| `teacher_model.h5` | The high-accuracy expert model used for Phase 3. |
+| `training_log.csv` | Full epoch-by-epoch audit trail of the training process. |
