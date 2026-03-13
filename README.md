@@ -22,7 +22,7 @@ To fit a high-performance model into the **520KB SRAM** of an ESP32, we employ t
 
 | Folder | Description |
 | :--- | :--- |
-| [**/data**](./data) | Contains the `smoke_detection_iot.csv` dataset featuring 15 physical and chemical sensors. |
+| [**/data**](./data) | Contains the .csv datasets . |
 | [**/notebooks**](./notebooks) | Google Colab notebooks for Data Analysis, Teacher Training, and Hybrid Optimization. |
 | [**/models**](./models) | Final exported `.tflite` files and C++ header files for ESP32 deployment. |
 | [**/docs**](./docs) | Project proposal, research papers, and technical documentation. |
@@ -40,6 +40,6 @@ The model is trained on a multi-dimensional dataset including:
 
 ## 🚀 Future Roadmap
 - [ ] Phase 1: Data Cleaning and Correlation Analysis (Completed)
-- [ ] Phase 2: Training the "Teacher" Model
+- [ ] Phase 2: Training the "Teacher" Model (Completed)
 - [ ] Phase 3: Applying Hybrid Pruning and Distillation
 - [ ] Phase 4: ESP32 Hardware Deployment and Real-time Testing
