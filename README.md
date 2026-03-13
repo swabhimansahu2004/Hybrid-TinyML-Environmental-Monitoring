@@ -55,7 +55,6 @@ Before training, we audited the dataset to ensure "Research Integrity." The goal
 ### Feature Correlation Heatmap:
 The heatmap below justifies our feature selection, showing the strong physical relationship between Humidity, Gas levels (Raw H2/Ethanol), and the Fire Alarm trigger.
 
-![Correlation Heatmap]() 
 *Note: High negative correlation in Raw Ethanol and positive correlation in Humidity are key drivers for the model.*
 
 ---
@@ -75,8 +74,6 @@ We developed a high-capacity "Teacher" model to serve as the gold standard for i
 
 ### Performance Learning Curves:
 The training logs show perfect convergence. The narrow gap between the training and validation lines confirms that the model is not overfitted and is ready for distillation.
-
-![Teacher Training Curves]()
 
 ---
 
