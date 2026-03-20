@@ -83,3 +83,53 @@ The training logs show perfect convergence. The narrow gap between the training 
 | `scaler.pkl` | Vital for ESP32; contains mean/std constants for real-time data scaling. |
 | `teacher_model.h5` | The high-accuracy expert model used for Phase 3. |
 | `training_log.csv` | Full epoch-by-epoch audit trail of the training process. |
+
+---
+
+## 🧠 Phase 3: Hybrid Optimization (Distillation & Pruning)
+In this phase, we execute the core "Hybrid" strategy: shrinking the high-capacity **Teacher** model into an ultra-lean **Student** model that fits the ESP32's memory constraints without sacrificing the 99.8% safety-critical accuracy.
+
+### 1. Knowledge Distillation (The "Student" Brain)
+We moved from a 30,000-parameter architecture to a **16-8-1 "Student" architecture** (Student_A). Instead of training on raw data alone, the Student was trained to mimic the Teacher's probability distributions.
+* **Student Complexity:** Only **353 parameters**.
+* **Result:** The Student achieved a baseline accuracy of **99.88%**, successfully capturing the "Expert" logic in a fraction of the size.
+
+### 2. Iterative Magnitude Pruning (The "Surgical" Snipping)
+To further optimize for the ESP32's Flash and SRAM, we applied **Iterative Pruning** to remove internal redundancy.
+* **Target Sparsity:** **50%** (Half of all neural connections were "zeroed out").
+* **Schedule:** 10 Epochs of **Polynomial Decay** pruning, allowing the model to "re-learn" its fire detection rules as connections were removed.
+* **The Outcome:** The model maintained a final test accuracy of **99.85%**, proving that 50% of the original connections were redundant "noise."
+
+---
+
+### 📊 Phase 3: Optimization Impact Report
+This report highlights the "Memory Journey" from the unoptimized Expert to the production-ready Student.
+
+| Metric | Teacher Model (Phase 2) | Distilled Student | Pruned Student (Final) |
+| :--- | :--- | :--- | :--- |
+| **Model Type** | 64-128-64-32-1 | 16-8-1 | **16-8-1 (50% Sparse)** |
+| **Parameters** | ~30,000+ | 353 | **353** |
+| **Test Accuracy** | 99.84% | 99.88% | **99.85%** |
+| **Uncompressed Size** | ~120 KB | 23.30 KB | **17.53 KB** |
+| **Zipped Size (Flash)** | ~80 KB | 12.0 KB | **2.50 KB** |
+| **Total Reduction** | Baseline | 80% Reduction | **98% Total Reduction** |
+
+### 🔍 Research Significance:
+The **2.50 KB** footprint is the definitive proof of the **Integrated Hybrid Optimization Framework**. 
+* **Sparsity Benefit:** By creating a sparse weight matrix, the model is highly compressible. 
+* **Edge Readiness:** This allows the ESP32 to run the fire detection logic in **microseconds**, leaving the CPU free to handle WiFi communication and sensor polling simultaneously.
+
+---
+
+### 📦 Artifacts Generated (Phase 3)
+| File | Purpose |
+| :--- | :--- |
+| `best_distilled_student.h5` | The initial dense Student model (353 params). |
+| `student_A_pruned.h5` | The final 50% sparse model after structural stripping. |
+| `pruning_summary.txt` | Audit log of weight magnitudes and sparsity ratios. |
+
+## 🚀 Future Roadmap (Updated)
+- [x] Phase 1: Data Cleaning and Correlation Analysis (Completed)
+- [x] Phase 2: Training the "Teacher" Model (Completed)
+- [x] Phase 3: Applying Hybrid Pruning and Distillation (Completed)
+- [ ] Phase 4: 8-bit Quantization and ESP32 Wokwi Deployment
