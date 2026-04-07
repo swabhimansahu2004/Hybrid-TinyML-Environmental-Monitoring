@@ -1,45 +1,61 @@
 {
     "version": 1,
+    "author": "Group 44-09",
     "editor": "wokwi",
     "parts": [
         {
-            "type": "board-esp32-devkit-c-v4",
-            "id": "esp1",
-            "top": 208.8,
-            "left": 240.84,
+            "type": "board-esp32-devkit-v1",
+            "id": "esp32",
+            "top": -2.72,
+            "left": -4.8,
             "attrs": {}
         },
         {
             "type": "wokwi-led",
             "id": "led1",
-            "top": 166.8,
-            "left": 364.6,
+            "top": -80,
+            "left": 200,
             "attrs": {
-                "color": "red"
+                "color": "red",
+                "label": "FIRE"
             }
         },
         {
             "type": "wokwi-buzzer",
             "id": "bz1",
-            "top": 144,
-            "left": 65,
-            "attrs": {
-                "volume": "0.1"
-            }
+            "top": -80,
+            "left": 280,
+            "attrs": {}
         }
     ],
     "connections": [
         [
+            "esp32:D2",
             "led1:A",
-            "esp1:2",
-            "green",
-            [
-                "v0"
-            ]
+            "red",
+            []
         ],
         [
             "led1:C",
-            "esp1:GND.2",
+            "esp32:GND",
+            "black",
+            []
+        ],
+        [
+            "esp32:D4",
+            "bz1:1",
+            "green",
+            []
+        ],
+        [
+            "bz1:2",
+            "esp32:GND",
+            "black",
+            []
+        ],
+        [
+            "led1:C",
+            "esp32:GND.1",
             "green",
             [
                 "v0"
@@ -47,20 +63,16 @@
         ],
         [
             "bz1:2",
-            "esp1:4",
-            "green",
-            [
-                "v0"
-            ]
-        ],
-        [
-            "bz1:1",
-            "esp1:GND.1",
+            "esp32:GND.2",
             "green",
             [
                 "v0"
             ]
         ]
     ],
+    "serialMonitor": {
+        "display": "always",
+        "newline": "lf"
+    },
     "dependencies": {}
 }
