@@ -2,9 +2,23 @@
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "tensorflow/lite/schema/schema_generated.h"
+#include "Wire.h"
+#include "LiquidCrystal_I2C.h"
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 #define TENSOR_ARENA_SIZE (20 * 1024)
 #define N_INPUTS 12
+
+// ── Toggle this to switch between plotter and debug monitor ──────────────────
+#define PLOTTER_MODE
+
+#ifdef PLOTTER_MODE
+  #define DBG(x)
+  #define DBGLN(x)
+#else
+  #define DBG(x)   Serial.print(x)
+  #define DBGLN(x) Serial.println(x)
+#endif
 
 constexpr uint8_t LED_PIN    = 2;
 constexpr uint8_t BUZZER_PIN = 4;
@@ -38,7 +52,7 @@ float raw_inputs[N_INPUTS] = {
 float  in_scale, out_scale;
 int8_t in_zp,    out_zp;
 bool   model_ok  = false;
-bool   use_model = true;   // set false to test plotter with fake data only
+bool   use_model = true;
 
 inline void setAlert(bool on) {
   digitalWrite(LED_PIN,    on ? HIGH : LOW);
@@ -47,20 +61,16 @@ inline void setAlert(bool on) {
 
 void setup() {
   Serial.begin(9600);
-       delay(500);   // give monitor time to attach
+  delay(1000);
 
   pinMode(LED_PIN,    OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
-
-  // ── Fake-data smoke test: if plotter shows spikes, model is the problem ──
-  for (int i = 0; i < 5; i++) {
-    Serial.println("22.0,0.10,0,0");
-    delay(200);
-  }
-               
-
-  Serial.print("Free heap: ");
-  Serial.println(ESP.getFreeHeap());
+  Wire.begin(21, 22);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Fire Detector");
+  delay(1000);
 
   resolver.AddFullyConnected();
   resolver.AddRelu();
@@ -69,10 +79,10 @@ void setup() {
 
   tfl_model = tflite::GetModel(fire_model_data);
   if (tfl_model->version() != TFLITE_SCHEMA_VERSION) {
-    Serial.println("ERROR: Schema mismatch");
+    DBGLN("ERROR: Schema mismatch");
     use_model = false;
   } else {
-    Serial.println("Model loaded OK");
+    DBGLN("Model loaded OK");
 
     static tflite::MicroInterpreter static_interpreter(
       tfl_model, resolver, tensor_arena, TENSOR_ARENA_SIZE
@@ -80,7 +90,7 @@ void setup() {
     interpreter = &static_interpreter;
 
     if (interpreter->AllocateTensors() != kTfLiteOk) {
-      Serial.println("ERROR: AllocateTensors failed - falling back to fake data");
+      DBGLN("ERROR: AllocateTensors failed - falling back to fake data");
       use_model = false;
     } else {
       input_tensor  = interpreter->input(0);
@@ -89,27 +99,18 @@ void setup() {
       in_zp     = input_tensor->params.zero_point;
       out_scale = output_tensor->params.scale;
       out_zp    = output_tensor->params.zero_point;
-
-      Serial.print("Arena used: ");
-      Serial.print(interpreter->arena_used_bytes());
-      Serial.print(" / ");
-      Serial.println(TENSOR_ARENA_SIZE);
-      Serial.printf("Input  type: %d\n", input_tensor->type);
-      Serial.printf("Output type: %d\n", output_tensor->type);
-      model_ok = true;
-      Serial.println("Model ready!");
+      model_ok  = true;
+      DBGLN("Model ready!");
     }
   }
-
-  Serial.println("Temp,Confidence,Latency_us,FreeHeap");
+  // ── NO Serial.println here — blank setup so plotter gets clean CSV ────────
 }
 
 void loop() {
-  float prediction = 0.0f;
-  uint32_t latency = 0;
+  float    prediction = 0.0f;
+  uint32_t latency    = 0;
 
   if (use_model && model_ok) {
-    // ── Quantized or float input write ──────────────────────────────────────
     if (input_tensor->type == kTfLiteFloat32) {
       for (int i = 0; i < N_INPUTS; i++) {
         input_tensor->data.f[i] =
@@ -127,7 +128,7 @@ void loop() {
 
     uint32_t t0 = micros();
     if (interpreter->Invoke() != kTfLiteOk) {
-      Serial.println("ERROR: Invoke failed");
+      DBGLN("ERROR: Invoke failed");
       delay(250);
       return;
     }
@@ -140,26 +141,30 @@ void loop() {
     }
 
   } else {
-    // ── Fallback: fake data so plotter always shows something ───────────────
-    float t = raw_inputs[9];
-    prediction = (t > 60.0f) ? 0.85f : 0.05f;
+    // ── Fallback fake data — plotter still spikes even if model fails ───────
+    prediction = (raw_inputs[9] > 60.0f) ? 0.85f : 0.05f;
     latency    = 999;
   }
 
   bool fire = (prediction > 0.5f);
   setAlert(fire);
 
-  // ── CSV output for Serial Plotter ────────────────────────────────────────
-  Serial.print(raw_inputs[9], 1);
-  Serial.print(",");
-  Serial.print(prediction, 4);
-  Serial.print(",");
-  Serial.print(latency);
-  Serial.print(",");
-  Serial.println(ESP.getFreeHeap());
-  Serial.flush();
+  // ── Pure CSV — only thing sent in PLOTTER_MODE ────────────────────────────
+    lcd.setCursor(0, 0);
+    lcd.print("Temp:");
+    lcd.print(raw_inputs[9], 1);
+    lcd.print("C   ");
 
-  // ── Simulate rising fire signature ───────────────────────────────────────
+    lcd.setCursor(0, 1);
+    if (fire) {
+      lcd.print("FIRE! Conf:");
+    } else {
+      lcd.print("Safe  Conf:");
+    }
+    lcd.print(prediction, 2);
+    lcd.print("  ");
+
+  // ── Simulate rising fire signature ────────────────────────────────────────
   raw_inputs[9]  += 1.5f;
   raw_inputs[10] += 150.0f;
   raw_inputs[6]  += 20.0f;

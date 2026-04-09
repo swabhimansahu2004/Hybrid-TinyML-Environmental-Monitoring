@@ -6,8 +6,8 @@
         {
             "type": "board-esp32-devkit-v1",
             "id": "esp32",
-            "top": -2.72,
-            "left": -4.8,
+            "top": 0,
+            "left": 0,
             "attrs": {}
         },
         {
@@ -26,6 +26,15 @@
             "top": -80,
             "left": 280,
             "attrs": {}
+        },
+        {
+            "type": "wokwi-lcd1602",
+            "id": "lcd1",
+            "top": 100,
+            "left": 200,
+            "attrs": {
+                "pins": "i2c"
+            }
         }
     ],
     "connections": [
@@ -54,20 +63,28 @@
             []
         ],
         [
-            "led1:C",
-            "esp32:GND.1",
-            "green",
-            [
-                "v0"
-            ]
+            "esp32:D21",
+            "lcd1:SDA",
+            "blue",
+            []
         ],
         [
-            "bz1:2",
-            "esp32:GND.2",
-            "green",
-            [
-                "v0"
-            ]
+            "esp32:D22",
+            "lcd1:SCL",
+            "yellow",
+            []
+        ],
+        [
+            "esp32:3V3",
+            "lcd1:VCC",
+            "red",
+            []
+        ],
+        [
+            "esp32:GND",
+            "lcd1:GND",
+            "black",
+            []
         ]
     ],
     "serialMonitor": {
